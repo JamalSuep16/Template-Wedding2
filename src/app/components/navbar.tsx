@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Home, Calendar, Mail, Info } from "lucide-react";
+import { Home, Calendar, Mail, Info, Heart } from "lucide-react";
 
 interface NavItemProps {
   icon: React.ReactNode;
@@ -69,6 +69,12 @@ export default function NavbarBawah() {
           icon={<Home size={20} />}
           label="Beranda"
           targetId="beranda"
+          onClick={handleNavClick}
+        />
+        <NavItem
+          icon={<Heart size={20} />}
+          label="Couple"
+          targetId="couple"
           onClick={handleNavClick}
         />
         <NavItem

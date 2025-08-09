@@ -16,8 +16,9 @@ export default function UcapanPage() {
   const [pesan, setPesan] = useState("");
   const [ucapanList, setUcapanList] = useState<Ucapan[]>([]);
   const [loading, setLoading] = useState(true);
+  const [editId, setEditId] = useState<number | null>(null); // ID ucapan yang sedang di-edit
 
-  // Ambil data dari API saat mount
+  // Ambil data saat load
   useEffect(() => {
     const fetchUcapan = async () => {
       try {
@@ -30,41 +31,81 @@ export default function UcapanPage() {
         setLoading(false);
       }
     };
-
     fetchUcapan();
   }, []);
 
+  // Tambah ucapan baru
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!nama.trim() || !pesan.trim()) return;
 
-    const newUcapan = {
-      nama: nama.trim(),
-      pesan: pesan.trim(),
-    };
+    // Kalau sedang edit
+    if (editId) {
+      await handleUpdate(editId, pesan);
+      return;
+    }
 
     try {
       const res = await fetch("/api/ucapan", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(newUcapan),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ nama: nama.trim(), pesan: pesan.trim() }),
       });
 
       const data: Ucapan = await res.json();
+      if (!res.ok) return;
 
-      if (!res.ok) {
-        console.error(data);
-        return;
-      }
-
-      setUcapanList((prev) => [data, ...prev]); // tambahkan ke atas
+      setUcapanList((prev) => [data, ...prev]);
       setNama("");
       setPesan("");
     } catch (err) {
       console.error("Gagal mengirim ucapan:", err);
     }
+  };
+
+  // Update ucapan
+  const handleUpdate = async (id: number, pesanBaru: string) => {
+    try {
+      const res = await fetch("/api/ucapan", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, pesan: pesanBaru }),
+      });
+
+      const data: Ucapan = await res.json();
+      if (!res.ok) return;
+
+      setUcapanList((prev) => prev.map((u) => (u.id === id ? data : u)));
+      setEditId(null);
+      setPesan("");
+      setNama("");
+    } catch (err) {
+      console.error("Gagal update ucapan:", err);
+    }
+  };
+
+  // Hapus ucapan
+  const handleDelete = async (id: number) => {
+    if (!confirm("Yakin mau hapus ucapan ini?")) return;
+
+    try {
+      const res = await fetch(`/api/ucapan?id=${id}`, {
+        method: "DELETE",
+      });
+
+      if (res.ok) {
+        setUcapanList((prev) => prev.filter((u) => u.id !== id));
+      }
+    } catch (err) {
+      console.error("Gagal menghapus ucapan:", err);
+    }
+  };
+
+  // Saat klik tombol edit
+  const startEdit = (ucapan: Ucapan) => {
+    setEditId(ucapan.id);
+    setNama(ucapan.nama);
+    setPesan(ucapan.pesan);
   };
 
   return (
@@ -81,6 +122,7 @@ export default function UcapanPage() {
           onChange={(e) => setNama(e.target.value)}
           placeholder="Nama kamu"
           className="w-full border border-gray-300 px-4 py-2 rounded"
+          disabled={!!editId} // tidak bisa ganti nama saat edit
         />
         <textarea
           value={pesan}
@@ -93,8 +135,21 @@ export default function UcapanPage() {
           type="submit"
           className="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 w-full"
         >
-          Kirim Ucapan
+          {editId ? "Simpan Perubahan" : "Kirim Ucapan"}
         </button>
+        {editId && (
+          <button
+            type="button"
+            onClick={() => {
+              setEditId(null);
+              setPesan("");
+              setNama("");
+            }}
+            className="bg-gray-400 text-white px-4 py-2 rounded w-full mt-2"
+          >
+            Batal Edit
+          </button>
+        )}
       </form>
 
       {/* Daftar Ucapan */}
@@ -123,6 +178,20 @@ export default function UcapanPage() {
                     locale: localeID,
                   })}
                 </p>
+              </div>
+              <div className="flex flex-col space-y-1">
+                <button
+                  onClick={() => startEdit(ucapan)}
+                  className="text-blue-500 text-sm hover:underline"
+                >
+                  Edit
+                </button>
+                <button
+                  onClick={() => handleDelete(ucapan.id)}
+                  className="text-red-500 text-sm hover:underline"
+                >
+                  Hapus
+                </button>
               </div>
             </div>
           ))

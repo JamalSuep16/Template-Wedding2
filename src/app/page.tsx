@@ -8,6 +8,7 @@ import HeroPage from "./components/hero";
 import InformasiPage from "./components/informasi";
 import UcapanPage from "./components/ucapan";
 import NavbarBawah from "./components/navbar";
+import CouplePage from "./components/couple";
 
 export default function Home() {
   const searchParams = useSearchParams();
@@ -35,6 +36,10 @@ export default function Home() {
     <main className="scroll-smooth pb-24">
       <section id="hero">
         <HeroPage />
+      </section>
+
+      <section id="couple">
+        <CouplePage />
       </section>
 
       <section id="ucapan">
