@@ -3,8 +3,10 @@
 import { useState, useEffect } from "react";
 import { formatDistance } from "date-fns";
 import { id as localeID } from "date-fns/locale";
+import { v4 as uuidv4 } from "uuid";
 
 interface Ucapan {
+  error: string;
   id: number;
   nama: string;
   pesan: string;
@@ -16,9 +18,14 @@ export default function UcapanPage() {
   const [pesan, setPesan] = useState("");
   const [ucapanList, setUcapanList] = useState<Ucapan[]>([]);
   const [loading, setLoading] = useState(true);
-  const [editId, setEditId] = useState<number | null>(null); // ID ucapan yang sedang di-edit
+  const [editId, setEditId] = useState<number | null>(null);
 
-  // Ambil data saat load
+  useEffect(() => {
+    if (!localStorage.getItem("ucapanToken")) {
+      localStorage.setItem("ucapanToken", uuidv4());
+    }
+  }, []);
+
   useEffect(() => {
     const fetchUcapan = async () => {
       try {
@@ -34,14 +41,14 @@ export default function UcapanPage() {
     fetchUcapan();
   }, []);
 
-  // Tambah ucapan baru
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!nama.trim() || !pesan.trim()) return;
 
-    // Kalau sedang edit
+    const token = localStorage.getItem("ucapanToken");
+
     if (editId) {
-      await handleUpdate(editId, pesan);
+      await handleUpdate(editId, pesan, token!);
       return;
     }
 
@@ -49,11 +56,14 @@ export default function UcapanPage() {
       const res = await fetch("/api/ucapan", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ nama: nama.trim(), pesan: pesan.trim() }),
+        body: JSON.stringify({ nama: nama.trim(), pesan: pesan.trim(), token }),
       });
 
       const data: Ucapan = await res.json();
-      if (!res.ok) return;
+      if (!res.ok) {
+        alert(data.error || "Gagal mengirim ucapan");
+        return;
+      }
 
       setUcapanList((prev) => [data, ...prev]);
       setNama("");
@@ -63,17 +73,19 @@ export default function UcapanPage() {
     }
   };
 
-  // Update ucapan
-  const handleUpdate = async (id: number, pesanBaru: string) => {
+  const handleUpdate = async (id: number, pesanBaru: string, token: string) => {
     try {
       const res = await fetch("/api/ucapan", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id, pesan: pesanBaru }),
+        body: JSON.stringify({ id, pesan: pesanBaru, token }),
       });
 
       const data: Ucapan = await res.json();
-      if (!res.ok) return;
+      if (!res.ok) {
+        alert(data.error || "Gagal update ucapan");
+        return;
+      }
 
       setUcapanList((prev) => prev.map((u) => (u.id === id ? data : u)));
       setEditId(null);
@@ -84,24 +96,30 @@ export default function UcapanPage() {
     }
   };
 
-  // Hapus ucapan
   const handleDelete = async (id: number) => {
     if (!confirm("Yakin mau hapus ucapan ini?")) return;
 
+    const token = localStorage.getItem("ucapanToken");
+
     try {
-      const res = await fetch(`/api/ucapan?id=${id}`, {
+      const res = await fetch("/api/ucapan", {
         method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, token }),
       });
 
-      if (res.ok) {
-        setUcapanList((prev) => prev.filter((u) => u.id !== id));
+      const data = await res.json();
+      if (!res.ok) {
+        alert(data.error || "Gagal menghapus ucapan");
+        return;
       }
+
+      setUcapanList((prev) => prev.filter((u) => u.id !== id));
     } catch (err) {
       console.error("Gagal menghapus ucapan:", err);
     }
   };
 
-  // Saat klik tombol edit
   const startEdit = (ucapan: Ucapan) => {
     setEditId(ucapan.id);
     setNama(ucapan.nama);
@@ -109,31 +127,37 @@ export default function UcapanPage() {
   };
 
   return (
-    <section id="ucapan" className="px-4 py-12 max-w-xl mx-auto">
-      <h2 className="text-2xl font-bold mb-4 text-purple-700 text-center">
-        Ucapan
+    <section
+      id="ucapan"
+      className="px-4 py-12 max-w-2xl mx-auto bg-pink-50 min-h-screen"
+    >
+      <h2 className="text-3xl font-bold mb-6 text-pink-700 text-center">
+        💌 Ucapan
       </h2>
 
-      {/* Form Ucapan */}
-      <form onSubmit={handleSubmit} className="space-y-4 mb-8">
+      {/* Form */}
+      <form
+        onSubmit={handleSubmit}
+        className="space-y-4 mb-8 bg-white p-6 rounded-lg shadow-md"
+      >
         <input
           type="text"
           value={nama}
           onChange={(e) => setNama(e.target.value)}
           placeholder="Nama kamu"
-          className="w-full border border-gray-300 px-4 py-2 rounded"
-          disabled={!!editId} // tidak bisa ganti nama saat edit
+          className="w-full border border-pink-300 px-4 py-2 rounded focus:outline-none focus:ring-2 focus:ring-pink-400"
+          disabled={!!editId}
         />
         <textarea
           value={pesan}
           onChange={(e) => setPesan(e.target.value)}
-          placeholder="Tulis ucapan untuk mempelai..."
-          className="w-full border border-gray-300 px-4 py-2 rounded resize-none"
+          placeholder="Tulis ucapan..."
+          className="w-full border border-pink-300 px-4 py-2 rounded resize-none focus:outline-none focus:ring-2 focus:ring-pink-400"
           rows={4}
         />
         <button
           type="submit"
-          className="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 w-full"
+          className="bg-pink-500 text-white px-4 py-2 rounded hover:bg-pink-600 w-full transition"
         >
           {editId ? "Simpan Perubahan" : "Kirim Ucapan"}
         </button>
@@ -145,14 +169,14 @@ export default function UcapanPage() {
               setPesan("");
               setNama("");
             }}
-            className="bg-gray-400 text-white px-4 py-2 rounded w-full mt-2"
+            className="bg-gray-400 text-white px-4 py-2 rounded w-full mt-2 hover:bg-gray-500"
           >
             Batal Edit
           </button>
         )}
       </form>
 
-      {/* Daftar Ucapan */}
+      {/* List */}
       <div className="space-y-4">
         {loading ? (
           <p className="text-gray-500 text-center">Memuat ucapan...</p>
@@ -162,13 +186,13 @@ export default function UcapanPage() {
           ucapanList.map((ucapan) => (
             <div
               key={ucapan.id}
-              className="bg-gray-100 rounded-lg p-4 flex items-start space-x-3"
+              className="bg-white rounded-lg p-4 flex flex-col sm:flex-row sm:items-start sm:space-x-3 shadow-md"
             >
-              <div className="bg-purple-500 text-white rounded-full h-10 w-10 flex items-center justify-center font-bold uppercase">
+              <div className="bg-pink-500 text-white rounded-full h-10 w-10 flex items-center justify-center font-bold uppercase mb-2 sm:mb-0">
                 {ucapan.nama.charAt(0)}
               </div>
               <div className="flex-1">
-                <p className="font-semibold">{ucapan.nama}</p>
+                <p className="font-semibold text-pink-700">{ucapan.nama}</p>
                 <p className="text-gray-700 whitespace-pre-line">
                   {ucapan.pesan}
                 </p>
@@ -179,7 +203,7 @@ export default function UcapanPage() {
                   })}
                 </p>
               </div>
-              <div className="flex flex-col space-y-1">
+              <div className="flex flex-row sm:flex-col sm:space-y-1 mt-2 sm:mt-0 space-x-2 sm:space-x-0">
                 <button
                   onClick={() => startEdit(ucapan)}
                   className="text-blue-500 text-sm hover:underline"

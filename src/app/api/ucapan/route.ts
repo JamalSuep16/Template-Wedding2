@@ -1,25 +1,23 @@
 import { NextResponse } from "next/server";
-import { v4 as uuidv4 } from "uuid";
 
 interface Ucapan {
   id: number;
   nama: string;
   pesan: string;
-  waktu: string; // ISO format
-  token: string; // token untuk autentikasi pemilik
+  waktu: string;
+  token: string;
 }
 
 let ucapanList: Ucapan[] = [];
 
-// GET: Ambil semua ucapan
+// GET
 export async function GET() {
   return NextResponse.json(ucapanList);
 }
 
-// POST: Tambah ucapan baru
+// POST
 export async function POST(req: Request) {
-  const body = await req.json();
-  const { nama, pesan, token } = body;
+  const { nama, pesan, token } = await req.json();
 
   if (!nama || !pesan || !token) {
     return NextResponse.json(
@@ -40,10 +38,9 @@ export async function POST(req: Request) {
   return NextResponse.json(newUcapan);
 }
 
-// PUT: Edit ucapan
+// PUT
 export async function PUT(req: Request) {
-  const body = await req.json();
-  const { id, pesan, token } = body;
+  const { id, pesan, token } = await req.json();
 
   const ucapan = ucapanList.find((u) => u.id === id);
   if (!ucapan) {
@@ -64,25 +61,37 @@ export async function PUT(req: Request) {
   return NextResponse.json(ucapan);
 }
 
-// DELETE: Hapus ucapan
+// DELETE
 export async function DELETE(req: Request) {
-  const { id, token } = await req.json();
+  let id: number;
+  let token: string;
 
-  const ucapanIndex = ucapanList.findIndex((u) => u.id === id);
-  if (ucapanIndex === -1) {
+  try {
+    const body = await req.json();
+    id = body.id;
+    token = body.token;
+  } catch {
+    return NextResponse.json(
+      { error: "Format body tidak valid" },
+      { status: 400 }
+    );
+  }
+
+  const index = ucapanList.findIndex((u) => u.id === id);
+  if (index === -1) {
     return NextResponse.json(
       { error: "Ucapan tidak ditemukan" },
       { status: 404 }
     );
   }
 
-  if (ucapanList[ucapanIndex].token !== token) {
+  if (ucapanList[index].token !== token) {
     return NextResponse.json(
       { error: "Tidak diizinkan menghapus ucapan ini" },
       { status: 403 }
     );
   }
 
-  ucapanList.splice(ucapanIndex, 1);
+  ucapanList.splice(index, 1);
   return NextResponse.json({ success: true });
 }

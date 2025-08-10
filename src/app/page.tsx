@@ -9,6 +9,7 @@ import InformasiPage from "./components/informasi";
 import UcapanPage from "./components/ucapan";
 import NavbarBawah from "./components/navbar";
 import CouplePage from "./components/couple";
+import GiftPage from "./components/onlinegift";
 
 export default function Home() {
   const searchParams = useSearchParams();
@@ -40,6 +41,10 @@ export default function Home() {
 
       <section id="couple">
         <CouplePage />
+      </section>
+
+      <section id="gift">
+        <GiftPage />
       </section>
 
       <section id="ucapan">
