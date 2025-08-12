@@ -15,10 +15,10 @@ function NavItem({ icon, label, targetId, onClick }: NavItemProps) {
     <a
       href={`#${targetId}`}
       onClick={(e) => onClick(e, targetId)}
-      className="flex flex-col items-center text-gray-700 hover:text-blue-500 transition-colors duration-300"
+      className="flex flex-col items-center text-pink-800 hover:text-pink-500 transition-colors duration-300"
     >
       {icon}
-      <span className="text-xs">{label}</span>
+      <span className="text-[10px] md:text-xs mt-1">{label}</span>
     </a>
   );
 }
@@ -28,7 +28,7 @@ export default function NavbarBawah() {
   const [lastScrollY, setLastScrollY] = useState(0);
   const [hovering, setHovering] = useState(false);
 
-  // Scroll behavior
+  // Scroll hide/show behavior
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
@@ -58,45 +58,45 @@ export default function NavbarBawah() {
 
   return (
     <nav
-      className={`fixed bottom-0 left-0 w-full bg-white shadow-md border-t z-50 transition-transform duration-300 ${
+      className={`fixed bottom-0 left-0 w-full bg-pink-50/90 backdrop-blur-md border-t border-pink-200 shadow-lg z-50 transition-transform duration-300 ${
         hideNavbar ? "translate-y-full" : "translate-y-0"
       }`}
       onMouseEnter={() => setHovering(true)}
       onMouseLeave={() => setHovering(false)}
     >
-      <div className="flex justify-around items-center py-2">
+      <div className="flex justify-around items-center py-2 max-w-lg mx-auto">
         <NavItem
-          icon={<Home size={20} />}
+          icon={<Home size={22} />}
           label="Beranda"
           targetId="beranda"
           onClick={handleNavClick}
         />
         <NavItem
-          icon={<Heart size={20} />}
-          label="Couple"
-          targetId="couple"
-          onClick={handleNavClick}
-        />
-        <NavItem
-          icon={<Calendar size={20} />}
+          icon={<Calendar size={22} />}
           label="Acara"
           targetId="acara"
           onClick={handleNavClick}
         />
         <NavItem
-          icon={<Gift size={20} />}
+          icon={<Heart size={22} />}
+          label="Couple"
+          targetId="couple"
+          onClick={handleNavClick}
+        />
+        <NavItem
+          icon={<Gift size={22} />}
           label="Gift"
           targetId="gift"
           onClick={handleNavClick}
         />
         <NavItem
-          icon={<Mail size={20} />}
+          icon={<Mail size={22} />}
           label="Ucapan"
           targetId="ucapan"
           onClick={handleNavClick}
         />
         <NavItem
-          icon={<Info size={20} />}
+          icon={<Info size={22} />}
           label="Info"
           targetId="info"
           onClick={handleNavClick}

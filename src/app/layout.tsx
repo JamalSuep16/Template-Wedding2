@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+// import MusicPlayerWrapper from "./components/musicplayer"; // client
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -19,15 +20,23 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col`}
       >
-        {children}
+        <main className="flex-1">{children}</main>
+        {/* <MusicPlayerWrapper
+          audioRef={undefined}
+          isPlaying={false}
+          setIsPlaying={function (val: boolean): void {
+            throw new Error("Function not implemented.");
+          }}
+        />{" "}
+        music player tetap muncul di semua halaman */}
       </body>
     </html>
   );

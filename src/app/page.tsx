@@ -1,7 +1,6 @@
-// app/page.tsx
 "use client";
 
-import { useSearchParams, useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 import HalamanDepan from "./components/halamandepan";
 import HeroPage from "./components/hero";
@@ -10,6 +9,7 @@ import UcapanPage from "./components/ucapan";
 import NavbarBawah from "./components/navbar";
 import CouplePage from "./components/couple";
 import GiftPage from "./components/onlinegift";
+import MusicPlayer from "./components/musicplayer"; // Impor komponen MusicPlayer
 
 export default function Home() {
   const searchParams = useSearchParams();
@@ -21,9 +21,13 @@ export default function Home() {
 
   const handleBukaUndangan = () => {
     setUndanganDibuka(true);
+
+    // Alih-alih menggunakan event kustom, kita sekarang menggunakan state
+    // untuk mengontrol MusicPlayer. Logika auto-play ada di dalam komponen MusicPlayer.
+
+    // Scroll ke bagian "hero" setelah undangan dibuka
     setTimeout(() => {
-      const acaraSection = document.getElementById("beranda");
-      acaraSection?.scrollIntoView({ behavior: "smooth" });
+      document.getElementById("hero")?.scrollIntoView({ behavior: "smooth" });
     }, 100);
   };
 
@@ -34,28 +38,27 @@ export default function Home() {
   }
 
   return (
-    <main className="scroll-smooth pb-24">
+    <main className="scroll-smooth pb-24 relative">
       <section id="hero">
         <HeroPage />
       </section>
-
       <section id="couple">
         <CouplePage />
       </section>
-
       <section id="gift">
         <GiftPage />
       </section>
-
       <section id="ucapan">
         <UcapanPage />
       </section>
-
       <section id="info">
         <InformasiPage />
       </section>
-
       <NavbarBawah />
+
+      {/* Menampilkan komponen pemutar musik */}
+      {/* Kita passing state 'undanganDibuka' untuk mengontrol auto-play */}
+      <MusicPlayer startPlaying={undanganDibuka} />
     </main>
   );
 }
