@@ -37,8 +37,17 @@ const BankAccount = ({
 
 export default function Home() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-pink-100 to-white p-6">
-      <div className="bg-white p-8 rounded-2xl shadow-lg max-w-lg w-full">
+    <div
+      className="relative min-h-screen flex items-center justify-center p-6 bg-no-repeat bg-cover bg-center"
+      style={{
+        backgroundImage: "url('/bgbunga.png')",
+      }}
+    >
+      {/* Overlay putih transparan */}
+      <div className="absolute inset-0 bg-white/50"></div>
+
+      {/* Konten */}
+      <div className="relative bg-white/80 p-8 rounded-2xl shadow-lg max-w-lg w-full">
         <h1 className="text-2xl font-bold text-center mb-6">
           🎁 Gift via Bank Transfer
         </h1>

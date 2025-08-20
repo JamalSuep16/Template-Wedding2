@@ -10,6 +10,7 @@ import NavbarBawah from "./components/navbar";
 import CouplePage from "./components/couple";
 import GiftPage from "./components/onlinegift";
 import MusicPlayer from "./components/musicplayer"; // Impor komponen MusicPlayer
+import AcaraPage from "./components/acara";
 
 export default function Home() {
   const searchParams = useSearchParams();
@@ -41,6 +42,9 @@ export default function Home() {
     <main className="scroll-smooth pb-24 relative">
       <section id="hero">
         <HeroPage />
+      </section>
+      <section id="acara" className="mt-8 px-4 sm:px-6 md:px-10 lg:px-16">
+        <AcaraPage />
       </section>
       <section id="couple">
         <CouplePage />
